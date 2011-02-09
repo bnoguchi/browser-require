@@ -33,7 +33,8 @@ fluentRequire.load = function (module, src, deps) {
   }
 };
 
-var ModulePaths = {
+var ModulePath = {
+  npmPrefix: "/NPM/",
   isNormalized: function (name) {
     return (/^\//).test(name);
   },
@@ -43,6 +44,11 @@ var ModulePaths = {
   isNpm: function (name) {
     return (/^\/NPM\//).test(name) || !this.isRel(name);
   },
+  normalize: function (name, parent) {
+    return this.isRel(name)
+      ? this.normalizeRelToParent(name, parent)
+      : this.npmPrefix + name + '.js';
+  },
   normalizeRelToParent: function (name, parent) {
     if (!parent) return name;
     var pathparts = parent.basedir.split('/');
@@ -50,13 +56,14 @@ var ModulePaths = {
   },
   normalizeRelToDir: function (name, dirparts) {
     var parts = name.split('/')
+      , clonedparts = dirparts.slice(0);
     for (var i = 0, l = parts.length, part; i < l; i++) {
       part = parts[i];
       if (part === '.') continue;
-      else if (part === '..') dirparts.pop();
-      else dirparts.push(part);
+      else if (part === '..') clonedparts.pop();
+      else clonedparts.push(part);
     }
-    return dirparts.join('/') + '.js';
+    return clonedparts.join('/') + '.js';
   }
 };
 
@@ -66,18 +73,14 @@ var ModulePaths = {
  */
 function ModulePromise (name, parent) {
   this.parents = [];
-  this.name = ModulePaths.isNormalized(name)
+  this.name = ModulePath.isNormalized(name)
     ? name
-    : ModulePaths.isRel(name)
-      ? ModulePaths.normalizeRelToParent(name, parent)
-      : "/NPM/" + name + '.js';
-  this.basedir = ModulePaths.isNpm(name)
+    : ModulePath.normalize(name, parent);
+  this.basedir = ModulePath.isNpm(this.name)
     ? this.name.split('/').length > 2
       ? this.name.split('/').slice(0, -1).join('/')
       : this.name.replace(/\.js$/, '')
-    : parent
-      ? parent.basedir
-      : name.split('/').slice(0, -1).join('/');
+    : this.name.split('/').slice(0, -1).join('/');
   this.deps = [];
 }
 
@@ -85,11 +88,11 @@ ModulePromise.from = function (module, parent) {
   if (!parent) {
     return fluentRequire.modules[module] || (fluentRequire.modules[module] = new ModulePromise(module));
   } else {
-    var name = ModulePaths.isNormalized(module)
+    var name = ModulePath.isNormalized(module)
       ? module
-      : ModulePaths.isRel(module)
-        ? ModulePaths.normalizeRelToParent(module, parent)
-        : "/NPM/" + module + '.js';
+      : ModulePath.isRel(module)
+        ? ModulePath.normalizeRelToParent(module, parent)
+        : ModulePath.npmPrefix + module + '.js';
     return fluentRequire.modules[name] || (fluentRequire.modules[name] = new ModulePromise(module, parent));
   }
 };

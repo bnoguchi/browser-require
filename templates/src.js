@@ -1,8 +1,8 @@
 var currdir = $dir;
 var require = function (module) {
-  var a = ModulePaths.isRel(module)
-        ? ModulePaths.normalizeRelToDir(module, currdir)
-        : "/NPM/" + module + '.js';
+  var a = ModulePath.isRel(module)
+        ? ModulePath.normalizeRelToDir(module, currdir)
+        : ModulePath.npmPrefix + module + '.js';
   return fluentRequire(a);
 }
 

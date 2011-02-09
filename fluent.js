@@ -174,7 +174,8 @@ module.exports = function (opts) {
           res.writeHead(200, {'Content-Type': 'text/javascript'});
           res.end(src);
         } else {
-          throw new Error("Could not find " + filepath);
+          console.log("Could not find " + filepath);
+          next();
         }
       }
 //      cache[req.url] =
