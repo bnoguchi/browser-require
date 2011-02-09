@@ -94,11 +94,10 @@ module.exports = function (opts) {
             , dest;
           if (lib) {
             dest = path.join(dir, lib, relChain.join('/') + '.js');
-            console.log(dest);
             if (path.existsSync(dest)) {
               fn(null, fs.readFileSync(dest));
             } else {
-              console.log("!!!");
+              throw new Error("Unimplemented");
             }
           } else fn("Missing " + relChain.join('/') + " in " + name + " package");
         }
