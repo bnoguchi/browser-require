@@ -1,0 +1,18 @@
+{
+  "name": "fluent",
+  "description": "Use CommonJS and NPM modules in your browser.",
+  "version": "0.0.1",
+  "homepage": "https://github.com/bnoguchi/node-fluent",
+  "repository": "https://github.com/bnoguchi/node-fluent.git",
+  "author": "Brian N Noguchi <brian.noguchi@gmail.com> (https://github.com/bnoguchi)",
+  "main": "./fluent",
+  "directories": {
+    "lib": ""
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "engines": {
+    "node": ">=0.2.6"
+  }
+}
