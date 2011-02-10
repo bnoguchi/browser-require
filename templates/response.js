@@ -1,1 +1,1 @@
-browserRequire.load($module, $src, $deps);
+browserRequire.load($module, $src, $deps, $isIndex);

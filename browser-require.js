@@ -10,14 +10,18 @@ module.exports = function (opts) {
         , src: fs.readFileSync(__dirname + '/templates/src.js', 'utf8')
       };
 
-  function fillinTemplate (module, src, deps) {
+  function fillinTemplate (module, src, deps, isIndex) {
+    var dir = isIndex
+            ? module.replace(/\.js$/, '').split('/')
+            : module.split('/').slice(0, -1);
     var src = templates.src
                 .replace('$src', src)
-                .replace(/\$dir/g, JSON.stringify(module.split('/').slice(0, -1)));
+                .replace(/\$dir/g, JSON.stringify(dir));
     return templates.response
       .replace('$module', JSON.stringify(module))
       .replace('$src', JSON.stringify(src))
-      .replace('$deps', JSON.stringify(deps));
+      .replace('$deps', JSON.stringify(deps))
+      .replace('$isIndex', isIndex);
   }
 
   function depsFor (src) {
@@ -89,22 +93,30 @@ module.exports = function (opts) {
       this.pkgJson( function (err, pkg) {
         if (err) return fn(self._relSrcErr = err);
         var directories = pkg.directory || pkg.directories
-          , lib = directories.lib
+          , lib = directories && directories.lib
           , direct, index;
         if (lib) {
+          // TODO Remove duplication in both if and else
           direct = path.join(self.dir, lib, self.relChain.join('/') + '.js');
           index = path.join(self.dir, lib, self.relChain.join('/'), 'index.js');
-          console.log(index);
           if (path.existsSync(direct)) {
-            fn(null, fs.readFileSync(direct, 'utf8'));
+            fn(null, fs.readFileSync(direct, 'utf8'), false);
           } else if (path.existsSync(index)) {
-            fn(null, fs.readFileSync(index, 'utf8'));
+            fn(null, fs.readFileSync(index, 'utf8'), true);
           } else {
-            throw new Error("Unimplemented");
+            throw new Error("Unimplemented - could not find package " + self.relChain.join('/'));
           }
         } else {
-          self._relSrcErr = 'Missing ' + self.relChain.join('/') + ' in ' + self.pkgName + ' package';
-          fn(self._relSrcErr);
+          direct = path.join(self.dir, self.relChain.join('/') + '.js');
+          index = path.join(self.dir, self.relChain.join('/'), 'index.js');
+          if (path.existsSync(direct)) {
+            fn(null, fs.readFileSync(direct, 'utf8'), false);
+          } else if (path.existsSync(index)) {
+            fn(null, fs.readFileSync(index, 'utf8'), true);
+          } else {
+            self._relSrcErr = 'Missing ' + self.relChain.join('/') + ' in ' + self.pkgName + ' package';
+            fn(self._relSrcErr);
+          }
         }
       });
     },
@@ -113,9 +125,9 @@ module.exports = function (opts) {
       if (this._srcerr) return fn(this._srcerr);
       var self = this;
       if (this.isSubmodule) { // Handle e.g., require("npm-module/sub-module")
-        this.relSrc( function (err, relSrc) {
+        this.relSrc( function (err, relSrc, isIndex) {
           if (err) return fn(self._srcerr = err);
-          fn(null, self._src = relSrc);
+          fn(null, self._src = relSrc, isIndex);
         });
       } else { // Handle e.g., require("npm-module")
         this.mainSrc( function (err, mainSrc) {
@@ -193,9 +205,9 @@ module.exports = function (opts) {
         var npmModule = new NpmModule(url);
         npmModule.isInstalled(function (err, isInstalled) {
           if (isInstalled) {
-            npmModule.src(function (err, body) {
+            npmModule.src(function (err, body, isIndex) {
               var src = 
-                cache[url] = fillinTemplate(url, body, depsFor(body));
+                cache[url] = fillinTemplate(url, body, depsFor(body), isIndex);
               res.writeHead(200, {'Content-Type': 'text/javascript'});
               res.end(src);
             });
@@ -214,7 +226,7 @@ module.exports = function (opts) {
           res.writeHead(200, {'Content-Type': 'text/javascript'});
           res.end(src);
         } else {
-          console.log("Could not find " + filepath);
+          console.error("Could not find " + filepath);
           next();
         }
       }

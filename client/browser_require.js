@@ -14,12 +14,17 @@ browserRequire.modules = {};
  * @param {String} src is the JavaScript content to eval
  * @param {Array} deps is an Array of dependencies (strings pointing to modules) that
  *                must load before module can be loaded.
+ * @param {Boolean} whether the module was found as module/index.js on the server or not
  */
-browserRequire.load = function (module, src, deps) {
+browserRequire.load = function (module, src, deps, isIndex) {
   var i = deps.length
     , depModule
     , target = ModulePromise.from(module);
   target.src = src;
+  if (isIndex) {
+    target.isIndex = isIndex;
+    target.basedir = target.name.replace(/\.js$/, '');
+  }
   while (i--) {
     depModule = ModulePromise.from(deps[i], target);
     if (!depModule.compiled) {
@@ -51,7 +56,11 @@ var ModulePath = {
   },
   normalizeRelToParent: function (name, parent) {
     if (!parent) return name;
-    var pathparts = parent.basedir.split('/');
+    var pathparts = parent.isIndex
+                  ? parent.name.replace(/\.js$/, '').split('/')
+                  : (/^\/NPM\/[^\/]+\.js$/).test(parent.name) // if it's /NPM/1degree.js only
+                    ? parent.name.replace(/\.js$/, '').split('/')
+                    : parent.basedir.split('/');
     return this.normalizeRelToDir(name, pathparts);
   },
   normalizeRelToDir: function (name, dirparts) {
