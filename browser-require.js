@@ -122,7 +122,9 @@ module.exports = function (opts) {
       res.end(src);
     } else if ('.js' === path.extname(req.url)) {
       if (req.url === '/browser_require.js') {
-        src = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
+        src = 
+          cache[req.url] = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
+
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         res.end(src);
       } else if (npmFlag.test(req.url)) {
@@ -133,7 +135,8 @@ module.exports = function (opts) {
         $npm.isNpmModule(pkgName, function (err, isNpm) {
           if (isNpm) {
             $npm.loadNpmModule(pkgName, relChain, function (err, body) {
-              var src = fillinTemplate(req.url, body, depsFor(body));
+              var src = 
+                cache[req.url] = fillinTemplate(req.url, body, depsFor(body));
               res.writeHead(200, {'Content-Type': 'text/javascript'});
               res.end(src);
             });
@@ -147,7 +150,8 @@ module.exports = function (opts) {
         filepath = path.join(baseDir, req.url);
         if (path.existsSync(filepath)) {
           body = fs.readFileSync(filepath, 'utf8');
-          src = fillinTemplate(req.url, body, depsFor(body));
+          src = 
+            cache[req.url] = fillinTemplate(req.url, body, depsFor(body));
           res.writeHead(200, {'Content-Type': 'text/javascript'});
           res.end(src);
         } else {
