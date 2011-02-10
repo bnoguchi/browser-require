@@ -3,8 +3,8 @@ var path = require('path');
 require.paths.unshift(path.join(__dirname, '..', '..'));
 var connect = require('connect');
 var app = connect.createServer();
-var fluent = require('fluent');
-app.use(fluent({
+var exposeRequire = require('browser-require');
+app.use(exposeRequire({
   base: __dirname
 }));
 app.use(connect.staticProvider(__dirname));
