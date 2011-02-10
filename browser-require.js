@@ -109,35 +109,12 @@ module.exports = function (opts) {
       , loadNpmModule: loadNpmModule
     };
 
-//    require.registerExtension('.js', function (content) {
-//      content.match(/require\(['"]([^'"]+)['"]\)/, function (match, $1) {
-//        if (!cache[$1] || cache[$1].mtime < mtime) {
-//          cache[$1] = {
-//              mtime: mtime || +new Date
-//            , source: source
-//          };
-//        }
-//        return match;
-//      });
-//      return content;
-//    });
   })();
-
-  function filepathForIncoming (url) {
-    return (url.charAt(0) === '/')
-      ? path.join(baseDir, url)
-      : path.join(baseDir, url);
-  }
-
-  function minDirnameForFile (filepath) {
-    return path.dirname(filepath).replace(baseDir, '');
-  }
 
   return function (req, res, next) {
     var src = cache[req.url]
       , body
       , filepath
-      , filedir
       , npmFlag = /^\/NPM\//;
     if (src) {
       res.writeHead(200, {'Content-Type': 'text/javascript'});
@@ -166,8 +143,7 @@ module.exports = function (opts) {
           }
         });
       } else {
-        filepath = filepathForIncoming(req.url);
-        filedir = minDirnameForFile(filepath)
+        filepath = path.join(baseDir, req.url);
         if (path.existsSync(filepath)) {
           body = fs.readFileSync(filepath, 'utf8');
           src = fillinTemplate(req.url, body, depsFor(body));
