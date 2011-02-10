@@ -84,6 +84,10 @@ function ModulePromise (name, parent) {
   this.deps = [];
 }
 
+/**
+ * @param {String} module
+ * @param {ModulePromise} parent
+ */
 ModulePromise.from = function (module, parent) {
   if (!parent) {
     return browserRequire.modules[module] || (browserRequire.modules[module] = new ModulePromise(module));
@@ -98,6 +102,9 @@ ModulePromise.from = function (module, parent) {
 };
 
 ModulePromise.prototype = {
+  /**
+   * @param {ModulePromise} module
+   */
   dependsOn: function (module) {
     this.deps.push(module.name);
     module.parents.push(this);
@@ -110,6 +117,10 @@ ModulePromise.prototype = {
     script.onerror = function () {};
     priorScript.parentNode.insertBefore(script, priorScript);
   },
+
+  /**
+   * @param {String} dep
+   */
   loaded: function (dep) {
     if (this.compiled) return;
     var deps = this.deps;
