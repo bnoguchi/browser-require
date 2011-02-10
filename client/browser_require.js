@@ -76,11 +76,7 @@ function ModulePromise (name, parent) {
   this.name = ModulePath.isNormalized(name)
     ? name
     : ModulePath.normalize(name, parent);
-  this.basedir = ModulePath.isNpm(this.name)
-    ? this.name.split('/').length > 2
-      ? this.name.split('/').slice(0, -1).join('/')
-      : this.name.replace(/\.js$/, '')
-    : this.name.split('/').slice(0, -1).join('/');
+  this.basedir = this.name.split('/').slice(0, -1).join('/');
   this.deps = [];
 }
 
