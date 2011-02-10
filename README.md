@@ -19,10 +19,10 @@ Currently, browser-require depends on the
 First, add in the browser-require middleware into your `connect` server:
     var connect = require('connect')
       , app = connect.createServer()
-      , brequire = require('browser-require');
+      , exposeRequire = require('browser-require');
 
     // What to add
-    app.use(brequire({
+    app.use(exposeRequire({
       base: __dirname   // This is where we look to find your non-global modules
     });
 

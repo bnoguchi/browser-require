@@ -145,7 +145,7 @@ module.exports = function (opts) {
       return;
     } else if ('.js' === path.extname(req.url)) {
       if (req.url === '/browser_require.js') {
-        src = fs.readFileSync(path.dirname(__filename) + '/browser_require.js', 'utf8');
+        src = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         res.end(src);
       } else if (npmFlag.test(req.url)) {
