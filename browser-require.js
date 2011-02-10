@@ -133,7 +133,7 @@ module.exports = function (opts) {
     }
   };
 
-  // Wrap npm as promise $npm, for manageable async middleware
+  // Wrap npm in a promise, for manageable async middleware
   NpmModule.isNpmLoaded = false;
   NpmModule.callbacks = []; // Callbacks for loaded event
   var proto = NpmModule.prototype;
