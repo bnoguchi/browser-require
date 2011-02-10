@@ -92,12 +92,21 @@ To run the npm modules example:
     $ node server.js
 
 ### Running the tests
+First, make sure the following npm modules are installed, since we will be
+using them to test browser-require:
+    $ npm install underscore
+    $ npm install data-structures-js
+    $npm install validator
+
 First, start up the test server:
     $ make start-test-server
+
 To run tests in Chrome:
     $ make test-chrome
+
 To run tests in Firefox:
     $ make test-firefox
+
 Finally, stop the test server:
     $ make stop-test-server
 
