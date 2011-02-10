@@ -96,7 +96,7 @@ First, make sure the following npm modules are installed, since we will be
 using them to test browser-require:
     $ npm install underscore
     $ npm install data-structures-js
-    $npm install validator
+    $ npm install validator
 
 First, start up the test server:
     $ make start-test-server
