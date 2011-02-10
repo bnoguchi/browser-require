@@ -62,10 +62,10 @@ Currently, all requires from the browser load JavaScript source and dependencies
 from the server in a dynamic, piece-wise, and on-demand fashion.
 
 When you request a javascript file:
-1. The server looks up the source and its module dependencies, if any.
-2. The server sends back the stringified source (SSRC) and its dependencies.
-3. If there are dependencies, then for each dependency, repeat from step 1.
-4. Once each javascript file has loaded all its dependencies, then eval and load the SSRC for the file.
+1.  The server looks up the source and its module dependencies, if any.
+2.  The server sends back the stringified source (SSRC) and its dependencies.
+3.  If there are dependencies, then for each dependency, repeat from step 1.
+4.  Once each javascript file has loaded all its dependencies, then eval and load the SSRC for the file.
 
 The above methodology is great for development environments, where you do not constantly want to
 re-compile a javascript file and its dependencies into a single static JavaScript file.
