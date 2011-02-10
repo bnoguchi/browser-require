@@ -90,11 +90,15 @@ module.exports = function (opts) {
         if (err) return fn(self._relSrcErr = err);
         var directories = pkg.directory || pkg.directories
           , lib = directories.lib
-          , dest;
+          , direct, index;
         if (lib) {
-          dest = path.join(self.dir, lib, self.relChain.join('/') + '.js');
-          if (path.existsSync(dest)) {
-            fn(null, fs.readFileSync(dest, 'utf8'));
+          direct = path.join(self.dir, lib, self.relChain.join('/') + '.js');
+          index = path.join(self.dir, lib, self.relChain.join('/'), 'index.js');
+          console.log(index);
+          if (path.existsSync(direct)) {
+            fn(null, fs.readFileSync(direct, 'utf8'));
+          } else if (path.existsSync(index)) {
+            fn(null, fs.readFileSync(index, 'utf8'));
           } else {
             throw new Error("Unimplemented");
           }
@@ -196,7 +200,7 @@ module.exports = function (opts) {
               res.end(src);
             });
           } else {
-            console.error("Could not find " + pkgName + ". Make sure it's installed via npm.");
+            console.error("Could not find " + npmModule.pkgName + ". Make sure it's installed via npm.");
             res.writeHead(404);
             res.end();
           }
