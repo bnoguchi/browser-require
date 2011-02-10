@@ -78,7 +78,15 @@ dynamic loading in the same environment, selectively depending on what you want 
 what you want to load dynamically.
 
 ### Examples
-There are examples at
+There are examples in the [./examples](https://github.com/bnoguchi/browser-require/tree/master/examples) directory.
+
+To run the relative modules example:
+    $ cd examples/relative
+    $ node server.js
+
+To run the npm modules example:
+    $ cd examples/npm
+    $ node server.js
 
 ### Running the tests
 First, start up the test server:
