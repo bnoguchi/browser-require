@@ -113,22 +113,23 @@ module.exports = function (opts) {
   })();
 
   return function (req, res, next) {
-    var src = cache[req.url]
+    var src
+      , url = req.url
       , body
       , filepath
       , npmFlag = /^\/NPM\//;
-    if (src) {
+    if (src = cache[url]) {
       res.writeHead(200, {'Content-Type': 'text/javascript'});
       res.end(src);
-    } else if ('.js' === path.extname(req.url)) {
-      if (req.url === '/browser_require.js') {
+    } else if ('.js' === path.extname(url)) {
+      if (url === '/browser_require.js') {
         src = 
-          cache[req.url] = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
+          cache[url] = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
 
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         res.end(src);
-      } else if (npmFlag.test(req.url)) {
-        var modulePath = req.url.replace(npmFlag, '').replace(/\.js$/, '')
+      } else if (npmFlag.test(url)) {
+        var modulePath = url.replace(npmFlag, '').replace(/\.js$/, '')
           , moduleChain = modulePath.split('/')
           , pkgName = moduleChain[0]
           , relChain = moduleChain.slice(1);
@@ -136,7 +137,7 @@ module.exports = function (opts) {
           if (isNpm) {
             $npm.loadNpmModule(pkgName, relChain, function (err, body) {
               var src = 
-                cache[req.url] = fillinTemplate(req.url, body, depsFor(body));
+                cache[url] = fillinTemplate(url, body, depsFor(body));
               res.writeHead(200, {'Content-Type': 'text/javascript'});
               res.end(src);
             });
@@ -147,11 +148,11 @@ module.exports = function (opts) {
           }
         });
       } else {
-        filepath = path.join(baseDir, req.url);
+        filepath = path.join(baseDir, url);
         if (path.existsSync(filepath)) {
           body = fs.readFileSync(filepath, 'utf8');
           src = 
-            cache[req.url] = fillinTemplate(req.url, body, depsFor(body));
+            cache[url] = fillinTemplate(url, body, depsFor(body));
           res.writeHead(200, {'Content-Type': 'text/javascript'});
           res.end(src);
         } else {
