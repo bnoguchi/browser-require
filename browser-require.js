@@ -1,6 +1,6 @@
 var fs = require('fs')
   , path = require('path')
-  , npm = require('npm')
+  , npm = require('npm');
 
 module.exports = function (opts) {
   var baseDir = opts.base
@@ -30,6 +30,7 @@ module.exports = function (opts) {
     return deps;
   }
 
+  // Wrap npm as promise $npm, for manageable async middleware
   var $npm = (function () {
     var isLoaded = false
       , callbacks = [];
@@ -42,7 +43,7 @@ module.exports = function (opts) {
     });
 
     var isNpmModule = function (name, fn) {
-      if (isLoaded) return _isNpmModule(name, fn); // TODO
+      if (isLoaded) return _isNpmModule(name, fn);
       callbacks.push([_isNpmModule, arguments]);
     };
 
@@ -53,7 +54,7 @@ module.exports = function (opts) {
         , dir = path.join(npm.dir, n, v, 'package');
       fs.stat(dir, function (err, stat) {
         if (err || !stat.isDirectory()) {
-          console.log(name + " is not installed via npm.");
+          console.error(name + " is not installed via npm.");
           fn(err, false);
         } else {
           fn(null, true);
@@ -62,7 +63,7 @@ module.exports = function (opts) {
     };
 
     var loadNpmModule = function (name, relChain, fn) {
-      if (isLoaded) return _loadNpmModule(name, relChain, fn); // TODO
+      if (isLoaded) return _loadNpmModule(name, relChain, fn);
       callbacks.push([_loadNpmModule, arguments]);
     };
 
@@ -72,13 +73,13 @@ module.exports = function (opts) {
         , v = nv[1] || 'active'
         , dir = path.join(npm.dir, n, v, 'package');
       fs.readFile(dir + '/package.json', 'utf8', function (err, body) {
-        if (err) { console.log("package.json missing for " + name); return fn(err); }
+        if (err) { console.error("package.json missing for " + name); return fn(err); }
         var pkg = JSON.parse(body);
         if (!relChain.length) { // Handle require("npm-module")
           if (pkg.main) {
             fs.stat(dir + '/' + pkg.main, function (err, stat) {
               if (err) {
-                console.log(err);
+                console.error(err);
                 fn(err);
               } else if (stat.isDirectory()) {
                 fn(null, fs.readFileSync(dir + '/' + pkg.main + '/index.js', 'utf8'));
@@ -119,7 +120,6 @@ module.exports = function (opts) {
     if (src) {
       res.writeHead(200, {'Content-Type': 'text/javascript'});
       res.end(src);
-      return;
     } else if ('.js' === path.extname(req.url)) {
       if (req.url === '/browser_require.js') {
         src = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
@@ -138,8 +138,9 @@ module.exports = function (opts) {
               res.end(src);
             });
           } else {
-            // TODO Respond with not found
-            throw new Error("Could not find " + pkgName + ". Make sure it's installed via npm.");
+            console.error("Could not find " + pkgName + ". Make sure it's installed via npm.");
+            res.writeHead(404);
+            res.end();
           }
         });
       } else {
@@ -154,12 +155,6 @@ module.exports = function (opts) {
           next();
         }
       }
-//      cache[req.url] =
-//      src = (path === './browser_require')
-//          ? fs.readFileSync(path.dirname(__filename) + '/browser_require.js', 'utf8')
-//          : compile(path.join(opts.base, req.url));
-//      res.writeHead(200, {'Content-Type': 'text/javascript'});
-//      res.end(src);
     } else {
       next();
     }
