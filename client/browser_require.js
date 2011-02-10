@@ -56,12 +56,16 @@ var ModulePath = {
   },
   normalizeRelToDir: function (name, dirparts) {
     var parts = name.split('/')
-      , clonedparts = dirparts.slice(0);
+      , clonedparts = dirparts.slice(0)
+      , aboveBase = false;
     for (var i = 0, l = parts.length, part; i < l; i++) {
       part = parts[i];
       if (part === '.') continue;
-      else if (part === '..') clonedparts.pop();
-      else clonedparts.push(part);
+      else if (part === '..') {
+        if (clonedparts.length === 1) aboveBase = true;
+        if (!aboveBase) clonedparts.pop();
+        else clonedparts.push(part);
+      } else clonedparts.push(part);
     }
     return clonedparts.join('/') + '.js';
   }
@@ -76,6 +80,8 @@ function ModulePromise (name, parent) {
   this.name = ModulePath.isNormalized(name)
     ? name
     : ModulePath.normalize(name, parent);
+  var match = this.name.match(/(\/\.\.)/g);
+  this.numLevelsAboveBase = match ? match.length : 0;
   this.basedir = this.name.split('/').slice(0, -1).join('/');
   this.deps = [];
 }
@@ -109,9 +115,16 @@ ModulePromise.prototype = {
     var priorScript = document.getElementsByTagName('script')[0]
       , script = document.createElement('SCRIPT');
     script.async = true;
-    script.src = this.name;
+    script.src = this.url();
     script.onerror = function () {};
     priorScript.parentNode.insertBefore(script, priorScript);
+  },
+
+  url: function () {
+    var n = this.numLevelsAboveBase;
+    if (n) {
+      return this.name + '?n=' + n;
+    } else return this.name
   },
 
   /**

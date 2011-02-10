@@ -1,5 +1,5 @@
 start-test-server:
-	@cd test && $(shell which node) server.js &
+	@cd test/nested && $(shell which node) server.js 2>&1 &
 stop-test-server:
 	@sudo pkill brtest
 test-chrome:

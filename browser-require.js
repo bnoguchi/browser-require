@@ -158,6 +158,23 @@ module.exports = function (opts) {
       , url = req.url
       , body
       , filepath;
+
+    // The following continuous block handles incoming requires
+    // that exist above the base dir
+    var uq = url.split('?')
+      , chain = uq[0].split('/')
+      , q = uq[1]
+      , nAboveBase;
+    // prefix carries ..,..,.. information - i.e., how many levels above
+    if (q) {
+      match = q.match(/n=([^&]+)/);
+      if (match) nAboveBase = parseInt(match[1], 10);
+    }
+    if (nAboveBase) {
+      url = chain.join('/');
+      while (nAboveBase--) url = '/..' + url;
+    }
+
     if (src = cache[url]) {
       res.writeHead(200, {'Content-Type': 'text/javascript'});
       res.end(src);
