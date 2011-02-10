@@ -110,8 +110,9 @@ To run tests in Firefox:
 Finally, stop the test server:
     $ make stop-test-server
 
-### Coming soon
+### Planning on implementing
 - Static compilation of all CommonJS dependencies into a single JavaScript file.
+- A middleware filter mechanism to include things such as a Google Closure Compiler filter.
 
 ### Contributors
 - [Brian Noguchi](https://github.com/bnoguchi)
