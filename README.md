@@ -24,12 +24,12 @@ First, add in the browser-require middleware into your `connect` server:
       , app = connect.createServer()
       , exposeRequire = require('browser-require');
 
-    // What to add
+    // The following line "app.use(..." is what you want to add to your project
+    // Make sure the browser-require middleware comes before staticProvider middleware
     app.use(exposeRequire({
       base: __dirname   // This is where we look to find your non-global modules
     });
 
-    // Make sure brequire middleware comes before staticProvider middleware
     app.use(connect.staticProvider(__dirname));
     app.listen(3000);
 
