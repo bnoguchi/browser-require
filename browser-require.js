@@ -44,7 +44,7 @@ module.exports = function (opts) {
   NpmModule.npmFlag = /^\/NPM\//;
 
   NpmModule.prototype = {
-    pkgJson: function (fn) {
+    __pkgJson: function (fn) {
       if (this._pkg) return fn(null, this._pkg);
       if (this._pkgerr) return fn(this._pkgerr);
       var self = this;
@@ -58,7 +58,7 @@ module.exports = function (opts) {
         fn(null, pkg);
       });
     },
-    mainSrc: function (fn) {
+    __mainSrc: function (fn) {
       if (this._mainSrc) return fn(null, this._mainSrc);
       if (this._mainSrcErr) return fn(this._mainSrcErr);
       var self = this;
@@ -82,7 +82,7 @@ module.exports = function (opts) {
         }
       });
     },
-    relSrc: function (fn) {
+    __relSrc: function (fn) {
       if (this._relSrc) return fn(null, this._relSrc);
       if (this._relSrcErr) return fn(this._relSrcErr);
       var self = this;
@@ -104,7 +104,7 @@ module.exports = function (opts) {
         }
       });
     },
-    src: function (fn) {
+    __src: function (fn) {
       if (this._src) return fn(null, this._src);
       if (this._srcerr) return fn(this._srcerr);
       var self = this;
@@ -119,52 +119,39 @@ module.exports = function (opts) {
           fn(null, self._src = mainSrc);
         });
       }
-    }
-  };
-
-  // Wrap npm as promise $npm, for manageable async middleware
-  var $npm = (function () {
-    var isLoaded = false
-      , callbacks = [];
-
-    npm.load( function () {
-      isLoaded = true;
-      for (var i = 0, l = callbacks.length; i < l; i++) {
-        callbacks[i][0].apply(this, callbacks[i][1]);
-      }
-    });
-
-    var isNpmModule = function (module, fn) {
-      if (isLoaded) return _isNpmModule(module, fn);
-      callbacks.push([_isNpmModule, arguments]);
-    };
-
-    var _isNpmModule = function (module, fn) {
-      fs.stat(module.dir, function (err, stat) {
+    },
+    __isInstalled: function (fn) {
+      var self = this;
+      fs.stat(this.dir, function (err, stat) {
         if (err || !stat.isDirectory()) {
-          console.error(module.name + " is not installed via npm.");
+          console.error(self.name + " is not installed via npm.");
           fn(err, false);
         } else {
           fn(null, true);
         }
       });
-    };
+    }
+  };
 
-    var loadNpmModule = function (module, fn) {
-      if (isLoaded) return _loadNpmModule(module, fn);
-      callbacks.push([_loadNpmModule, arguments]);
-    };
-
-    var _loadNpmModule = function (module, fn) {
-      module.src(fn);
-    };
-
-    return {
-        isNpmModule: isNpmModule
-      , loadNpmModule: loadNpmModule
-    };
-
-  })();
+  // Wrap npm as promise $npm, for manageable async middleware
+  NpmModule.isNpmLoaded = false;
+  NpmModule.callbacks = []; // Callbacks for loaded event
+  var proto = NpmModule.prototype;
+  for (var k in proto) {
+    proto[k.slice(2)] = (function (k) {
+      return function () {
+        if (NpmModule.isNpmLoaded) return proto[k].apply(this, arguments);
+        NpmModule.callbacks.push([proto[k], this, arguments]);
+      };
+    })(k);
+  }
+  npm.load( function () {
+    NpmModule.isNpmLoaded = true;
+    var callbacks = NpmModule.callbacks;
+    for (var i = 0, l = callbacks.length; i < l; i++) {
+      callbacks[i][0].apply(callbacks[i][1], callbacks[i][2]);
+    }
+  });
 
   return function (req, res, next) {
     var src
@@ -183,9 +170,9 @@ module.exports = function (opts) {
         res.end(src);
       } else if (NpmModule.npmFlag.test(url)) { // Handle npm modules
         var npmModule = new NpmModule(url);
-        $npm.isNpmModule(npmModule, function (err, isNpm) {
-          if (isNpm) {
-            $npm.loadNpmModule(npmModule, function (err, body) {
+        npmModule.isInstalled(function (err, isInstalled) {
+          if (isInstalled) {
+            npmModule.src(function (err, body) {
               var src = 
                 cache[url] = fillinTemplate(url, body, depsFor(body));
               res.writeHead(200, {'Content-Type': 'text/javascript'});
