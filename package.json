@@ -1,6 +1,6 @@
 {
   "name": "browser-require",
-  "description": "Use CommonJS and NPM modules from the browser.",
+  "description": "Use CommonJS and NPM modules from the browser",
   "version": "0.0.1",
   "homepage": "https://github.com/bnoguchi/browser-require",
   "repository": "https://github.com/bnoguchi/browser-require.git",
