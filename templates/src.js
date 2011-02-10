@@ -3,11 +3,11 @@ var require = function (module) {
   var a = ModulePath.isRel(module)
         ? ModulePath.normalizeRelToDir(module, currdir)
         : ModulePath.npmPrefix + module + '.js';
-  return fluentRequire(a);
+  return browserRequire(a);
 }
 
-for (var k in fluentRequire) {
-  require[k] = fluentRequire[k];
+for (var k in browserRequire) {
+  require[k] = browserRequire[k];
 }
 
 $src

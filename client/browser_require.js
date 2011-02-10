@@ -1,21 +1,21 @@
-function fluentRequire (path) {
-  var mod = fluentRequire.modules[path];
+function browserRequire (path) {
+  var mod = browserRequire.modules[path];
   if (mod && mod.compiled) {
     return mod.compiled;
   }
   throw new Error("Missing module " + path);
 }
 
-fluentRequire.modules = {};
+browserRequire.modules = {};
 
 /**
  * Invoked by JavaScript sent from the server back to the browser.
- * @param {String} module is the fluent-normalized module name
+ * @param {String} module is the brower-require-normalized module name
  * @param {String} src is the JavaScript content to eval
  * @param {Array} deps is an Array of dependencies (strings pointing to modules) that
  *                must load before module can be loaded.
  */
-fluentRequire.load = function (module, src, deps) {
+browserRequire.load = function (module, src, deps) {
   var i = deps.length
     , depModule
     , target = ModulePromise.from(module);
@@ -24,7 +24,7 @@ fluentRequire.load = function (module, src, deps) {
     depModule = ModulePromise.from(deps[i], target);
     if (!depModule.compiled) {
       target.dependsOn(depModule);
-      fluentRequire.modules[depModule.name] = depModule;
+      browserRequire.modules[depModule.name] = depModule;
       depModule.load();
     }
   }
@@ -86,14 +86,14 @@ function ModulePromise (name, parent) {
 
 ModulePromise.from = function (module, parent) {
   if (!parent) {
-    return fluentRequire.modules[module] || (fluentRequire.modules[module] = new ModulePromise(module));
+    return browserRequire.modules[module] || (browserRequire.modules[module] = new ModulePromise(module));
   } else {
     var name = ModulePath.isNormalized(module)
       ? module
       : ModulePath.isRel(module)
         ? ModulePath.normalizeRelToParent(module, parent)
         : ModulePath.npmPrefix + module + '.js';
-    return fluentRequire.modules[name] || (fluentRequire.modules[name] = new ModulePromise(module, parent));
+    return browserRequire.modules[name] || (browserRequire.modules[name] = new ModulePromise(module, parent));
   }
 };
 
