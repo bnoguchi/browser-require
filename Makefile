@@ -1,7 +1,7 @@
 start-test-server:
 	@cd test/nested && $(shell which node) server.js 2>&1 &
 stop-test-server:
-	@sudo pkill brtest
+	@pkill brtest
 test-chrome:
 	@$(shell which google-chrome) http://localhost:1234/?v=$(shell date +%s)
 test-firefox:
