@@ -10,3 +10,4 @@ app.use(fluent({
 app.use(connect.staticProvider(__dirname));
 app.listen(1234);
 console.log("Server running at http://127.0.0.1:1234");
+process.title = "brtest";
