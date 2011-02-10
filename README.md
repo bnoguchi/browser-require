@@ -85,6 +85,9 @@ To run the relative modules example:
     $ node server.js
 
 To run the npm modules example:
+    $ npm install underscore
+    $ npm install data-structures-js
+    $ npm install validator
     $ cd examples/npm
     $ node server.js
 
