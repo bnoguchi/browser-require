@@ -23,6 +23,8 @@ browserRequire.load = function (module, src, deps, isIndex) {
   target.src = src;
   if (isIndex) {
     target.isIndex = isIndex;
+    // Reset the basedir; prior to reset, basedir is name without trailing lastpart.js
+    // After the reset, basedir trails with lastpart
     target.basedir = target.name.replace(/\.js$/, '');
   }
   while (i--) {
@@ -57,8 +59,8 @@ var ModulePath = {
   normalizeRelToParent: function (name, parent) {
     if (!parent) return name;
     var pathparts = parent.isIndex
-                  ? parent.name.replace(/\.js$/, '').split('/')
-                  : (/^\/NPM\/[^\/]+\.js$/).test(parent.name) // if it's /NPM/1degree.js only
+                  ? parent.basedir.split('/')
+                  : (/^\/NPM\/[^\/]+\.js$/).test(parent.name) // if it's /NPM/1degree.js only, then we want /NPM/1degree/name
                     ? parent.name.replace(/\.js$/, '').split('/')
                     : parent.basedir.split('/');
     return this.normalizeRelToDir(name, pathparts);

@@ -94,25 +94,17 @@ module.exports = function (opts) {
         if (err) return fn(self._relSrcErr = err);
         var directories = pkg.directory || pkg.directories
           , lib = directories && directories.lib
-          , direct, index;
-        if (lib) {
-          // TODO Remove duplication in both if and else
-          direct = path.join(self.dir, lib, self.relChain.join('/') + '.js');
-          index = path.join(self.dir, lib, self.relChain.join('/'), 'index.js');
-          if (path.existsSync(direct)) {
-            fn(null, fs.readFileSync(direct, 'utf8'), false);
-          } else if (path.existsSync(index)) {
-            fn(null, fs.readFileSync(index, 'utf8'), true);
-          } else {
-            throw new Error("Unimplemented - could not find package " + self.relChain.join('/'));
-          }
+          , chain = [self.dir], direct, index;
+        if (lib) chain.push(lib);
+        direct = path.join.apply(this, chain.concat([self.relChain.join('/') + '.js']) );
+        index  = path.join.apply(this, chain.concat([self.relChain.join('/'), 'index.js']) );
+        if (path.existsSync(direct)) {
+          fn(null, fs.readFileSync(direct, 'utf8'), false);
+        } else if (path.existsSync(index)) {
+          fn(null, fs.readFileSync(index, 'utf8'), true);
         } else {
-          direct = path.join(self.dir, self.relChain.join('/') + '.js');
-          index = path.join(self.dir, self.relChain.join('/'), 'index.js');
-          if (path.existsSync(direct)) {
-            fn(null, fs.readFileSync(direct, 'utf8'), false);
-          } else if (path.existsSync(index)) {
-            fn(null, fs.readFileSync(index, 'utf8'), true);
+          if (lib) {
+            throw new Error("Unimplemented - could not find package " + self.relChain.join('/'));
           } else {
             self._relSrcErr = 'Missing ' + self.relChain.join('/') + ' in ' + self.pkgName + ' package';
             fn(self._relSrcErr);
