@@ -77,6 +77,48 @@ Moreover, there are plans to be able to use a hybrid approach for doing both sta
 dynamic loading in the same environment, selectively depending on what you want to pre-compile and
 what you want to load dynamically.
 
+### Compile mode
+browser-require also empowers you to compile everything into a single JavaScript file.
+
+Just change one line.
+
+Inside your `connect` server, add the following line
+    compile: true
+, so your server file should now look like:
+    var connect = require('connect')
+      , app = connect.createServer()
+      , exposeRequire = require('browser-require');
+
+    // The following line "app.use(..." is what you want to add to your project
+    // Make sure the browser-require middleware comes before staticProvider middleware
+    app.use(exposeRequire({
+        base: __dirname   // This is where we look to find your non-global modules
+      , compile: true
+    });
+
+Next, just relaunch your server.
+
+You do not need to change anything else. Simplicity at its best.
+
+### How compile mode works
+browser-require automatically takes care of converting `/js/app.js`
+original source and its dependencies into a single file located at `/js/app.compiled.js`.
+Now, when your index.html tries to retrieve `/js/app.js`, browser-require on the server looks it up
+at /js/app.compiled.js and returns it contents to the browser as if it were `/js/app.js`.
+
+### Configuration of compile mode
+If you want to change how your filename is transformed to become the compiled filename, 
+you can do so in the following way:
+    app.use(exposeRequire({
+        base: __dirname   // This is where we look to find your non-global modules
+      , compile: function ($1) {
+          // When we have "/js/app.js", $1 is "app"
+          // and what we return here replaces "app" with "app.min"
+          // so the new destination file becomes "/js/app.min.js"
+          return $1 + '.min.';
+        }
+    });
+
 ### Examples
 There are examples in the [./examples](https://github.com/bnoguchi/browser-require/tree/master/examples) directory.
 

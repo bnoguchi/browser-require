@@ -4,12 +4,16 @@ var fs = require('fs')
 
 module.exports = function (opts) {
   var baseDir = opts.base
+    , compile = opts.compile
+
     , cache = {} // {moduleName: { mtime: ..., compiled: ...}}
     , templates = {
           response: fs.readFileSync(__dirname + '/templates/response.js', 'utf8')
         , src: fs.readFileSync(__dirname + '/templates/src.js', 'utf8')
       };
 
+  /**
+   */
   function fillinTemplate (module, src, deps, isIndex) {
     var dir = isIndex
             ? module.replace(/\.js$/, '').split('/')
@@ -24,6 +28,11 @@ module.exports = function (opts) {
       .replace('$isIndex', isIndex);
   }
 
+  /**
+   * Returns the names of the dependencies found in the source text.
+   * @param {String} src
+   * @return {Array} dependencies 
+   */
   function depsFor (src) {
     var re = /require\(['"]([^'"]+)['"]\)/g
       , match
@@ -189,7 +198,9 @@ module.exports = function (opts) {
     } else if ('.js' === path.extname(url)) {
       if (url === '/browser_require.js') {
         src = 
-          cache[url] = fs.readFileSync(path.dirname(__filename) + '/client/browser_require.js', 'utf8');
+        cache[url] = fs.readFileSync(
+          path.dirname(__filename) + 
+          '/client/browser_require.js', 'utf8');
 
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         res.end(src);
@@ -204,7 +215,8 @@ module.exports = function (opts) {
               res.end(src);
             });
           } else {
-            console.error("Could not find " + npmModule.pkgName + ". Make sure it's installed via npm.");
+            console.error("Could not find " + npmModule.pkgName + 
+                          ". Make sure it's installed via npm.");
             res.writeHead(404);
             res.end();
           }
