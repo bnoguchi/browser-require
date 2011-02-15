@@ -13,6 +13,15 @@ module.exports = function (opts) {
       };
 
   /**
+   * Loads the module's parameters into the template.
+   * In dynamic mode, the template is sent to the browser.
+   * In compile mode, the template is used as a fragment in the aggregate compiled output.
+   *
+   * @param {String} module is the name of the module (e.g., 'somemodule.js')
+   * @param {String} src is the src of the module
+   * @param {Array} deps is the array of the module's dependencies, as Strings
+   * @param {Boolean} isIndex is true if module's src existed at an index.js
+   * @return {String} the template that is filled in with the module's information
    */
   function fillinTemplate (module, src, deps, isIndex) {
     var dir = isIndex
@@ -30,6 +39,7 @@ module.exports = function (opts) {
 
   /**
    * Returns the names of the dependencies found in the source text.
+   *
    * @param {String} src
    * @return {Array} dependencies 
    */
@@ -138,15 +148,50 @@ module.exports = function (opts) {
       }
     },
     __isInstalled: function (fn) {
+      this.isInstalledCb = fn;
+      if (this.isInstalled) {
+        fn(null);
+        return this;
+      }
       var self = this;
       fs.stat(this.dir, function (err, stat) {
-        if (err || !stat.isDirectory()) {
+        if (err) {
           console.error(self.name + " is not installed via npm.");
-          fn(err, false);
+          fn(err);
+        } else if (!stat.isDirectory()) {
+          self.isInstalled = false;
+          if (self.isNotInstalledCb)
+            self.isNotInstalledCb(err);
         } else {
-          fn(null, true);
+          self.isInstalled = true;
+          fn(err);
         }
       });
+      return this;
+    },
+    __isNotInstalled: function (fn) {
+      this.isNotInstalledCb = fn;
+      if ('undefined' !== typeof this.isInstalled) {
+        if (!this.isInstalled) {
+          fn(null);
+          return this;
+        }
+      }
+      var self = this;
+      fs.stat(this.dir, function (err, stat) {
+        if (err) {
+          console.error(self.name + " is not installed via npm.");
+          fn(err);
+        } else if (!stat.isDirectory()) {
+          self.isInstalled = false;
+          fn(err);
+        } else {
+          self.isInstalled = true;
+          if (self.isInstalledCb)
+            self.isInstalledCb(err);
+        }
+      });
+      return this;
     }
   };
 
@@ -170,17 +215,13 @@ module.exports = function (opts) {
     }
   });
 
-  return function (req, res, next) {
-    var src
-      , url = req.url
-      , body
-      , filepath;
-
+  function extractUrl (url) {
     // The following continuous block handles incoming requires
     // that exist above the base dir
     var uq = url.split('?')
       , chain = uq[0].split('/')
       , q = uq[1]
+      , match
       , nAboveBase;
     // prefix carries ..,..,.. information - i.e., how many levels above
     if (q) {
@@ -191,6 +232,14 @@ module.exports = function (opts) {
       url = chain.join('/');
       while (nAboveBase--) url = '/..' + url;
     }
+    return url;
+  }
+
+  return function (req, res, next) {
+    var src
+      , url = extractUrl(req.url)
+      , body
+      , filepath;
 
     if (src = cache[url]) {
       res.writeHead(200, {'Content-Type': 'text/javascript'});
@@ -198,29 +247,28 @@ module.exports = function (opts) {
     } else if ('.js' === path.extname(url)) {
       if (url === '/browser_require.js') {
         src = 
-        cache[url] = fs.readFileSync(
-          path.dirname(__filename) + 
-          '/client/browser_require.js', 'utf8');
+          cache[url] = fs.readFileSync(
+            path.dirname(__filename) + 
+            '/client/browser_require.js', 'utf8');
 
         res.writeHead(200, {'Content-Type': 'text/javascript'});
         res.end(src);
       } else if (NpmModule.npmFlag.test(url)) { // Handle npm modules
         var npmModule = new NpmModule(url);
-        npmModule.isInstalled(function (err, isInstalled) {
-          if (isInstalled) {
+        npmModule
+          .isInstalled(function (err) {
             npmModule.src(function (err, body, isIndex) {
               var src = 
                 cache[url] = fillinTemplate(url, body, depsFor(body), isIndex);
               res.writeHead(200, {'Content-Type': 'text/javascript'});
               res.end(src);
             });
-          } else {
+          }).isNotInstalled(function (err) {
             console.error("Could not find " + npmModule.pkgName + 
                           ". Make sure it's installed via npm.");
             res.writeHead(404);
             res.end();
-          }
-        });
+          });
       } else { // Handle local, relative modules
         filepath = path.join(baseDir, url);
         if (path.existsSync(filepath)) {
