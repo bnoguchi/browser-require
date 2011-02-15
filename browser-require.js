@@ -148,50 +148,15 @@ module.exports = function (opts) {
       }
     },
     __isInstalled: function (fn) {
-      this.isInstalledCb = fn;
-      if (this.isInstalled) {
-        fn(null);
-        return this;
-      }
       var self = this;
       fs.stat(this.dir, function (err, stat) {
-        if (err) {
+        if (err || !stat.isDirectory()) {
           console.error(self.name + " is not installed via npm.");
-          fn(err);
-        } else if (!stat.isDirectory()) {
-          self.isInstalled = false;
-          if (self.isNotInstalledCb)
-            self.isNotInstalledCb(err);
+          fn(err, false);
         } else {
-          self.isInstalled = true;
-          fn(err);
+          fn(null, true);
         }
       });
-      return this;
-    },
-    __isNotInstalled: function (fn) {
-      this.isNotInstalledCb = fn;
-      if ('undefined' !== typeof this.isInstalled) {
-        if (!this.isInstalled) {
-          fn(null);
-          return this;
-        }
-      }
-      var self = this;
-      fs.stat(this.dir, function (err, stat) {
-        if (err) {
-          console.error(self.name + " is not installed via npm.");
-          fn(err);
-        } else if (!stat.isDirectory()) {
-          self.isInstalled = false;
-          fn(err);
-        } else {
-          self.isInstalled = true;
-          if (self.isInstalledCb)
-            self.isInstalledCb(err);
-        }
-      });
-      return this;
     }
   };
 
@@ -255,20 +220,21 @@ module.exports = function (opts) {
         res.end(src);
       } else if (NpmModule.npmFlag.test(url)) { // Handle npm modules
         var npmModule = new NpmModule(url);
-        npmModule
-          .isInstalled(function (err) {
+        npmModule.isInstalled(function (err, isInstalled) {
+          if (isInstalled) {
             npmModule.src(function (err, body, isIndex) {
               var src = 
                 cache[url] = fillinTemplate(url, body, depsFor(body), isIndex);
               res.writeHead(200, {'Content-Type': 'text/javascript'});
               res.end(src);
             });
-          }).isNotInstalled(function (err) {
+          } else {
             console.error("Could not find " + npmModule.pkgName + 
                           ". Make sure it's installed via npm.");
             res.writeHead(404);
             res.end();
-          });
+          }
+        });
       } else { // Handle local, relative modules
         filepath = path.join(baseDir, url);
         if (path.existsSync(filepath)) {
