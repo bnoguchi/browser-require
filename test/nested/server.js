@@ -1,4 +1,4 @@
-require.paths.unshift('..');
+require.paths.unshift('../lib');
 var path = require('path');
 require.paths.unshift(path.join(__dirname, '..', '..'));
 var connect = require('connect');
