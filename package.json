@@ -9,6 +9,9 @@
   "directories": {
     "lib": ""
   },
+  "bin": {
+    "browser-require": "./bin/browser-require"
+  },
   "scripts": {
     "test": "make test"
   },

@@ -1,0 +1,17 @@
+#!/usr/bin/env node
+
+var br = require('../lib/browser-require')
+  , compileAll = br.compileAll
+  , ScriptPromise = br.ScriptPromise
+  , fs = require('fs');
+
+var fname = process.argv[2];
+
+ScriptPromise.base = process.cwd();
+fname = fs.realpathSync(fname);
+fname = fname.replace(ScriptPromise.base, '.');
+ScriptPromise.from(fname, null, function (err, script) {
+  compileAll(script, function (err, compiled) {
+    console.log(compiled);
+  });
+});
