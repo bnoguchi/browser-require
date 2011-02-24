@@ -5,7 +5,7 @@
   "homepage": "https://github.com/bnoguchi/browser-require",
   "repository": "https://github.com/bnoguchi/browser-require.git",
   "author": "Brian N Noguchi <brian.noguchi@gmail.com> (https://github.com/bnoguchi)",
-  "main": "./browser-require.js",
+  "main": "./lib/browser-require.js",
   "directories": {
     "lib": ""
   },
