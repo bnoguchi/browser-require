@@ -1,8 +1,7 @@
 browser-require
 ===============
 
-#### The easiest way to require CommonJS and NPM modules in your browser
-browser-require
+#### The easiest way to require and use CommonJS and NPM modules from your browser
 
 Npm makes it easy to share code on your server. But how many times have you 
 wanted to share Javascript code easily between the server and the browser?

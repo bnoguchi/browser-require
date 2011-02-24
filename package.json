@@ -12,6 +12,10 @@
   "scripts": {
     "test": "make test"
   },
+  "dependencies": {
+    "expresso": ">= 0.7.2",
+    "dependency-promise": ">=0.2.0"
+  },
   "engines": {
     "node": ">=0.2.6"
   }
