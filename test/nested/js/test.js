@@ -42,10 +42,17 @@ asyncTest('npm submodules', function () {
   ok(s.contains('ma'));
   start();
 });
-asyncTest('npm modules that use relative modules', function () {
-  // The following file requires ./entities;
+asyncTest('npm modules that use relative modules from a file under the npm lib dir', function () {
+  // The following file requires ./entities
   // See https://github.com/chriso/node-validator/blob/master/lib/xss.js
   var clean = require('validator/xss').clean;
   equals('function', typeof clean);
+  start();
+});
+asyncTest('npm modules that use relative modules from the main file', function () {
+  // The following file requires ./lib/async from the 'main' index.js package file
+  // See https://github.com/caolan/async/index.js
+  var noConflict = require('async').noConflict;
+  equals('function', typeof noConflict);
   start();
 });
