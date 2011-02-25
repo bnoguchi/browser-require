@@ -11,12 +11,15 @@ on the server in your browser.
 browser-require enables you to require both relative (local to your project)
 CommonJS modules as well as global NPM modules.
 
-### Getting started
+### Installation
 To install:
     $ npm install browser-require
 
+### Using browser-require within your connect app
+
 Currently, browser-require depends on the 
-[connect](https://github.com/visionmedia/connect/) middleware framework.
+[connect](https://github.com/visionmedia/connect/) middleware framework,
+if you want to serve client javascript files that contain `require`s.
 
 First, add in the browser-require middleware into your `connect` server:
     var connect = require('connect')
@@ -39,9 +42,6 @@ On the browser, this is what your index.html might look like:
         <title>browser-require example</title>
       </head>
       <body>
-        <!-- This is a boilerplate file that you must require -->
-        <script type="text/javascript" src="/browser_require.js"></script>
-
         <!-- This is where your custom JavaScript code resides. See README section below -->
         <script type="text/javascript" src="/js/app.js"></script>
       </body>
@@ -57,66 +57,21 @@ Then in `/js/app.js`, you can require CommonJS and NPM modules as if you are on 
     }));
 
 ### How it works
-Currently, all requires from the browser load JavaScript source and dependencies
-from the server in a dynamic, piece-wise, and on-demand fashion.
-
 When you request a javascript file:
 
-1. The server looks up the source and its module dependencies, if any.
-2. The server sends back the stringified source (SSRC) and its dependencies.
-3. If there are dependencies, then for each dependency, repeat from step 1.
-4. Once each javascript file has loaded all its dependencies, then eval and load the SSRC for the file.
+1. The server looks up the source and its module dependencies (if any) recursively.
+2. Once the server has collected all dependencies, it compiles the top-level file plus
+   its dependencies into a file that gets sent back to the browser.
 
-The above methodology is great for development environments, where you do not constantly want to
-re-compile a javascript file and its dependencies into a single static JavaScript file.
+### Command line binary
+Sometimes you need to statically compile a set of javascript client files from the command line.
+For example, this is necessary if you are building a Chrome plugin. A Chrome plugin can use JavaScript
+files that exist inside the Chrome plugin (as opposed to fetching a JavaScript file that exists on the
+server). Therefore, it is necessary in this case to compile your JavaScript files and their dependencies
+outside of the context of a server.
 
-That said, I will be adding static compilation shortly for use in production environments.
-
-Moreover, there are plans to be able to use a hybrid approach for doing both static compilation and
-dynamic loading in the same environment, selectively depending on what you want to pre-compile and
-what you want to load dynamically.
-
-### Compile mode
-browser-require also empowers you to compile everything into a single JavaScript file.
-
-Just change one line.
-
-Inside your `connect` server, add the following line
-    compile: true
-, so your server file should now look like:
-    var connect = require('connect')
-      , app = connect.createServer()
-      , exposeRequire = require('browser-require');
-
-    // The following line "app.use(..." is what you want to add to your project
-    // Make sure the browser-require middleware comes before staticProvider middleware
-    app.use(exposeRequire({
-        base: __dirname   // This is where we look to find your non-global modules
-      , compile: true
-    });
-
-Next, just relaunch your server.
-
-You do not need to change anything else. Simplicity at its best.
-
-### How compile mode works
-browser-require automatically takes care of converting `/js/app.js`
-original source and its dependencies into a single file located at `/js/app.compiled.js`.
-Now, when your index.html tries to retrieve `/js/app.js`, browser-require on the server looks it up
-at /js/app.compiled.js and returns it contents to the browser as if it were `/js/app.js`.
-
-### Configuration of compile mode
-If you want to change how your filename is transformed to become the compiled filename, 
-you can do so in the following way:
-    app.use(exposeRequire({
-        base: __dirname   // This is where we look to find your non-global modules
-      , compile: function ($1) {
-          // When we have "/js/app.js", $1 is "app"
-          // and what we return here replaces "app" with "app.min"
-          // so the new destination file becomes "/js/app.min.js"
-          return $1 + '.min.';
-        }
-    });
+`browser-require` supports this via a command line binary. You can use it in the following way:
+    $ browser-require path/to/js/file.js > path/to/compiled/js/file.js
 
 ### Examples
 There are examples in the [./examples](https://github.com/bnoguchi/browser-require/tree/master/examples) directory.
@@ -152,7 +107,6 @@ Finally, stop the test server:
     $ make stop-test-server
 
 ### Planning on implementing
-- Static compilation of all CommonJS dependencies into a single JavaScript file.
 - A middleware filter mechanism to include things such as a Google Closure Compiler filter.
 
 ### Contributors
