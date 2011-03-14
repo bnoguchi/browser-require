@@ -1,7 +1,7 @@
 {
   "name": "browser-require",
   "description": "Use CommonJS and NPM modules from the browser",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage": "https://github.com/bnoguchi/browser-require",
   "repository": "https://github.com/bnoguchi/browser-require.git",
   "author": "Brian N Noguchi <brian.noguchi@gmail.com> (https://github.com/bnoguchi)",
