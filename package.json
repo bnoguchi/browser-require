@@ -15,8 +15,10 @@
   "scripts": {
     "test": "make test"
   },
+  "devDependencies": {
+    "expresso": ">= 0.7.2"
+  },
   "dependencies": {
-    "expresso": ">= 0.7.2",
     "dependency-promise": ">=0.2.0"
   },
   "engines": {
