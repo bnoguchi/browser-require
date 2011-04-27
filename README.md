@@ -74,6 +74,7 @@ server). Therefore, it is necessary in this case to compile your JavaScript file
 outside of the context of a server.
 
 `browser-require` supports this via a command line binary. You can use it in the following way:
+
     $ browser-require path/to/js/file.js > path/to/compiled/js/file.js
 
 ### Examples
