@@ -42,10 +42,11 @@ On the browser, this is what your index.html might look like:
         <title>browser-require example</title>
       </head>
       <body>
-        <!-- This is where your custom JavaScript code resides. See README section below -->
         <script type="text/javascript" src="/js/app.js"></script>
       </body>
     </html>
+
+The script src "/js/app.js" is where your custom JavaScript code resides.
 
 Then in `/js/app.js`, you can require CommonJS and NPM modules as if you are on the server:
     var _ = require('underscore'); // browser-side requires FTW!!!!
