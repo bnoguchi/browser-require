@@ -36,6 +36,7 @@ First, add in the browser-require middleware into your `connect` server:
     app.listen(3000);
 
 On the browser, this is what your index.html might look like:
+
     <!DOCTYPE html>
     <html>
       <head>
@@ -49,6 +50,7 @@ On the browser, this is what your index.html might look like:
 The script src "/js/app.js" is where your custom JavaScript code resides.
 
 Then in `/js/app.js`, you can require CommonJS and NPM modules as if you are on the server:
+
     var _ = require('underscore'); // browser-side requires FTW!!!!
 
     // This should alert "10"
@@ -78,10 +80,12 @@ outside of the context of a server.
 There are examples in the [./examples](https://github.com/bnoguchi/browser-require/tree/master/examples) directory.
 
 To run the relative modules example:
+
     $ cd examples/relative
     $ node server.js
 
 To run the npm modules example:
+
     $ npm install underscore
     $ npm install data-structures-js
     $ npm install validator
@@ -91,20 +95,25 @@ To run the npm modules example:
 ### Running the tests
 First, make sure the following npm modules are installed, since we will be
 using them to test browser-require:
+
     $ npm install underscore
     $ npm install data-structures-js
     $ npm install validator
 
 First, start up the test server:
+
     $ make start-test-server
 
 To run tests in Chrome:
+
     $ make test-chrome
 
 To run tests in Firefox:
+
     $ make test-firefox
 
 Finally, stop the test server:
+
     $ make stop-test-server
 
 ### Planning on implementing
