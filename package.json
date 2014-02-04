@@ -19,7 +19,8 @@
     "expresso": ">= 0.7.2"
   },
   "dependencies": {
-    "dependency-promise": ">=0.2.0"
+    "dependency-promise": ">=0.2.0",
+    "npm": ">=1.0.0"
   },
   "engines": {
     "node": ">=0.2.6"
